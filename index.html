@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mondiale 2 - Mobile + Autocomplete</title>
+    <title>Mondiale 2 - Backup Corrigido</title>
     <style>
         :root { --primary: #e63946; --secondary: #1d3557; --bg: #f1faee; --white: #ffffff; --accent: #48c774; }
         * { box-sizing: border-box; }
@@ -19,14 +19,15 @@
         .tab-btn.active { background: var(--primary); }
 
         .main-content { flex: 1; padding: 15px; overflow-y: auto; }
-        .card { background: var(--white); padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; }
+        .card { background: var(--white); padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; margin-bottom: 20px; }
         
         .table-container { width: 100%; overflow-x: auto; margin-top: 15px; border-radius: 8px; }
         table { width: 100%; border-collapse: collapse; min-width: 400px; }
         th, td { text-align: left; padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
         
         .input-tabela { width: 100%; border: 1px solid #ddd; border-radius: 4px; padding: 10px; font-size: 16px; background: #fffde7; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; font-size: 16px; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; font-size: 16px; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
         
         .painel-financeiro { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
         .box { padding: 10px; border-radius: 8px; font-weight: bold; font-size: 0.8rem; text-align: center; border-bottom: 3px solid #ddd; }
@@ -50,7 +51,6 @@
 </head>
 <body>
 
-    <!-- Lista de Autocomplete Reativada -->
     <datalist id="lista-insumos-sugestao"></datalist>
 
     <div class="sidebar">
@@ -73,14 +73,27 @@
     <script>
         const sabores = ["Mussarela", "Pizza de Calabresa", "Pizza de Calabresa 2", "P.de Calabresa 3", "P.de Calabresa 4", "Presunto 1", "Presunto 2", "Presunto 3", "Catumilho", "Marguerita", "Dois Queijo", "Roma", "Atum 1", "Poderosa 1", "Poderosa 2", "Poderosa 3", "Baiana", "Bacon 1", "Bauru", "Francesa", "Suprema", "Mesclada", "Gramuth", "Lombo 1", "Lombo 2", "Lombo 3", "Lombo Nobre", "Brocolis 1", "Brocolis Super", "Brocolis Especial", "Frango 1", "Calafrango", "Crocante", "Mimosa", "Caipira", "Do Chefe", "Frangao", "Monte Neve", "Paulista", "Toscana", "Mexicana", "Calabresa Super", "Santista", "Santista 2", "Santista 3", "Kabulosa", "Mineira", "Capricho", "Champinon", "Tres Queijo", "Bacon Especial", "Escarola Especial", "Escarola Super", "Extrovertida", "Peperoni", "Portuguesa", "Quatro Queijo", "Gostosa", "Siciliana", "Tomate Seco", "Gratinada", "Jorge Tadeu", "Cinco Queijo", "Frango Super", "Palminto Especial", "Palminto Super", "Anova Mondialle", "Portuguesa Especial", "Portuguesa Super", "Light", "Amoda da Casa", "Carne Seca 1", "Carne Seca Especial", "Carne Seca Super", "Carne Seca Maluca", "Frango Super 2", "Frango Super 3", "Amoda do Cliente", "Seis Queijo", "Brigadeiro", "Confete", "Romeu e Julieta", "Banana 1", "Banana 2", "Banana 3", "Banana Nevada", "Chocolate com Uva"];
 
+        // CHAVE ÚNICA PARA EVITAR CONFLITOS DE VERSÃO
+        const DB_KEY = 'mondiale_v11_data';
+
         let db = {
-            pizzas: JSON.parse(localStorage.getItem('mond_p_v10')) || {"MASSA BASE": []},
-            precos: JSON.parse(localStorage.getItem('mond_e_v10')) || {},
-            vendas: JSON.parse(localStorage.getItem('mond_v_v10')) || {},
-            rend: JSON.parse(localStorage.getItem('mond_r_v10')) || 15
+            pizzas: {"MASSA BASE": []},
+            precos: {},
+            vendas: {},
+            rend: 15
         };
 
+        // Carregamento Seguro
         function init() {
+            const saved = localStorage.getItem(DB_KEY);
+            if(saved) {
+                try {
+                    db = JSON.parse(saved);
+                } catch(e) {
+                    console.error("Erro ao carregar banco de dados");
+                }
+            }
+            
             atualizarSugestoes();
             const sel = document.getElementById('select-pizza');
             sabores.forEach(s => {
@@ -128,10 +141,10 @@
                     <div class="box box-fixo">Massa: R$ ${unitMassa.toFixed(2)}</div>
                     <div class="box box-custo">Custo: R$ ${custoTotal.toFixed(2)}</div>
                     <div class="box box-venda">Venda R$: <input type="number" id="v-venda" value="${precoVenda}" style="width:70px" onchange="salvarPizza('${nome}')"></div>
-                    ${nome !== "MASSA BASE" ? `<div class="box box-lucro ${lucro > 20 ? 'lucro-bom' : 'lucro-baixo'}">SOBRA: R$ ${lucro.toFixed(2)}</div>` : `<div class="box box-fixo">Faz <input type="number" id="v-rend" value="${db.rend}" style="width:50px" onchange="db.rend=this.value; salvarPizza('${nome}')"> un.</div>`}
+                    ${nome !== "MASSA BASE" ? `<div class="box box-lucro ${lucro > 20 ? 'lucro-bom' : 'lucro-baixo'}">SOBRA: R$ ${lucro.toFixed(2)}</div>` : `<div class="box box-fixo">Faz <input type="number" id="v-rend" value="${db.rend}" style="width:50px" onchange="db.rend=parseFloat(this.value); salvarPizza('${nome}')"> un.</div>`}
                 </div>
                 <div class="table-container">
-                    <table id="tab-piz"><thead><tr><th>Item (Autocomplete)</th><th>Qtd</th></tr></thead><tbody>`;
+                    <table id="tab-piz"><thead><tr><th>Item</th><th>Qtd (g/un)</th></tr></thead><tbody>`;
             
             itens.forEach(i => {
                 html += `<tr><td><input class="input-tabela" list="lista-insumos-sugestao" value="${i.item}"></td><td><input class="input-tabela" type="number" value="${i.peso}"></td></tr>`;
@@ -139,21 +152,28 @@
 
             html += `</tbody></table></div>
                 <button class="btn" style="background:#eee" onclick="addLinhaPiz()">+ Insumo</button>
-                <button class="btn" style="background:var(--accent); color:white" onclick="salvarPizza('${nome}')">SALVAR FICHA</button></div>`;
+                <button class="btn" style="background:var(--accent); color:white" onclick="salvarPizza('${nome}')">SALVAR ESTA FICHA</button></div>`;
             document.getElementById('conteudo').innerHTML = html;
         }
 
         function carregarPrecos() {
-            let html = `<div class="card"><h3>Estoque</h3><div class="table-container"><table><thead><tr><th>Nome</th><th>Preço R$</th><th>Emb (g/un)</th></tr></thead><tbody id="b-pre">`;
+            let html = `<div class="card"><h3>Estoque e Preços</h3><div class="table-container"><table><thead><tr><th>Nome</th><th>Preço R$</th><th>Emb (g/un)</th></tr></thead><tbody id="b-pre">`;
             for(let n in db.precos) {
                 html += `<tr><td><input class="input-tabela" value="${n}"></td><td><input class="input-tabela" type="number" value="${db.precos[n].preco}"></td><td><input class="input-tabela" type="number" value="${db.precos[n].emb}"></td></tr>`;
             }
-            html += `</tbody></table></div><button class="btn" style="background:#eee" onclick="addLinhaPre()">+ Novo Item</button><button class="btn" style="background:var(--accent); color:white" onclick="salvarEstoque()">SALVAR ESTOQUE</button></div>`;
+            html += `</tbody></table></div><button class="btn" style="background:#eee" onclick="addLinhaPre()">+ Novo Insumo</button><button class="btn" style="background:var(--accent); color:white" onclick="salvarEstoque()">SALVAR ESTOQUE</button></div>`;
             document.getElementById('conteudo').innerHTML = html;
         }
 
         function carregarConfig() {
-            document.getElementById('conteudo').innerHTML = `<div class="card"><h3>Backup de Segurança</h3><button class="btn" onclick="exportar()">BAIXAR BACKUP</button><button class="btn" style="background:#e9c46a" onclick="document.getElementById('f-imp').click()">SUBIR BACKUP</button><input type="file" id="f-imp" style="display:none" onchange="importar(event)"></div>`;
+            document.getElementById('conteudo').innerHTML = `
+                <div class="card">
+                    <h3>Backup e Segurança</h3>
+                    <p style="font-size: 13px; color: #666;">Use os botões abaixo para salvar seus dados fora do celular.</p>
+                    <button class="btn" style="background:var(--secondary); color:white" onclick="exportar()">BAIXAR ARQUIVO DE BACKUP</button>
+                    <button class="btn" style="background:#e9c46a" onclick="document.getElementById('f-imp').click()">RESTAURAR BACKUP ANTERIOR</button>
+                    <input type="file" id="f-imp" style="display:none" onchange="importar(event)">
+                </div>`;
         }
 
         function calcularMassa() {
@@ -174,39 +194,71 @@
                 if(ins[0].value) lista.push({item: ins[0].value, peso: parseFloat(ins[1].value) || 0});
             });
             db.pizzas[n] = lista;
-            persistir(); carregarPizza(n);
+            persistir(); 
+            alert("Ficha de " + n + " salva!");
+            carregarPizza(n);
         }
 
         function salvarEstoque() {
             let rows = document.querySelectorAll('#b-pre tr');
-            db.precos = {};
+            let novosPrecos = {};
             rows.forEach(r => {
                 let ins = r.querySelectorAll('input');
-                if(ins[0].value) db.precos[ins[0].value] = { preco: parseFloat(ins[1].value), emb: parseFloat(ins[2].value) };
+                if(ins[0].value) novosPrecos[ins[0].value] = { preco: parseFloat(ins[1].value) || 0, emb: parseFloat(ins[2].value) || 1 };
             });
-            persistir(); atualizarSugestoes(); carregarPrecos();
+            db.precos = novosPrecos;
+            persistir(); 
+            atualizarSugestoes(); 
+            alert("Estoque atualizado com sucesso!");
+            carregarPrecos();
         }
 
         function persistir() {
-            localStorage.setItem('mond_p_v10', JSON.stringify(db.pizzas));
-            localStorage.setItem('mond_e_v10', JSON.stringify(db.precos));
-            localStorage.setItem('mond_v_v10', JSON.stringify(db.vendas));
-            localStorage.setItem('mond_r_v10', JSON.stringify(db.rend));
+            localStorage.setItem(DB_KEY, JSON.stringify(db));
         }
 
         function exportar() {
-            const blob = new Blob([JSON.stringify(db)], {type:'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'mondiale_v10.json'; a.click();
+            const dataStr = JSON.stringify(db, null, 2);
+            const blob = new Blob([dataStr], {type:'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'backup_mondiale_' + new Date().toLocaleDateString().replace(/\//g, '-') + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
         function importar(e) {
+            const file = e.target.files[0];
+            if (!file) return;
             const reader = new FileReader();
-            reader.onload = (ev) => { db = JSON.parse(ev.target.result); persistir(); location.reload(); };
-            reader.readAsText(e.target.files[0]);
+            reader.onload = (ev) => {
+                try {
+                    const dadosImportados = JSON.parse(ev.target.result);
+                    if(dadosImportados.pizzas && dadosImportados.precos) {
+                        db = dadosImportados;
+                        persistir();
+                        alert("Backup restaurado com sucesso!");
+                        location.reload();
+                    } else {
+                        alert("Arquivo inválido!");
+                    }
+                } catch(err) {
+                    alert("Erro ao ler o arquivo!");
+                }
+            };
+            reader.readAsText(file);
         }
 
-        function addLinhaPiz() { document.querySelector('#tab-piz tbody').insertRow().innerHTML = '<td><input class="input-tabela" list="lista-insumos-sugestao"></td><td><input class="input-tabela" type="number"></td>'; }
-        function addLinhaPre() { document.getElementById('b-pre').insertRow().innerHTML = '<td><input class="input-tabela"></td><td><input class="input-tabela" type="number"></td><td><input class="input-tabela" type="number"></td>'; }
+        function addLinhaPiz() { 
+            const row = document.querySelector('#tab-piz tbody').insertRow();
+            row.innerHTML = '<td><input class="input-tabela" list="lista-insumos-sugestao"></td><td><input class="input-tabela" type="number"></td>'; 
+        }
+        function addLinhaPre() { 
+            const row = document.getElementById('b-pre').insertRow();
+            row.innerHTML = '<td><input class="input-tabela"></td><td><input class="input-tabela" type="number"></td><td><input class="input-tabela" type="number"></td>'; 
+        }
 
         init();
     </script>
