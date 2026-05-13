@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mondiale 2 - Gestão Total</title>
+    <title>Mondiale 2 - Sistema PRO</title>
     <style>
         :root { --primary: #e63946; --secondary: #1d3557; --bg: #f1faee; --white: #ffffff; --accent: #48c774; }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
@@ -22,7 +22,6 @@
         .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
         .btn-save { background: var(--accent); color: white; }
         .btn-add { background: #eee; color: #333; }
-        .btn-import { background: #457b9d; color: white; }
         .tabs-fixas { position: fixed; bottom: 0; width: 100%; display: flex; background: var(--secondary); border-top: 3px solid var(--primary); }
         .tab-btn { flex: 1; padding: 15px; color: white; border: none; background: none; font-weight: bold; }
         .tab-btn.active { background: var(--primary); }
@@ -45,7 +44,7 @@
 <script>
 const saboresFull = ["Mussarela", "Pizza de Calabresa", "Pizza de Calabresa 2", "P.de Calabresa 3", "P.de Calabresa 4", "Presunto 1", "Presunto 2", "Presunto 3", "Catumilho", "Marguerita", "Dois Queijo", "Roma", "Atum 1", "Poderosa 1", "Poderosa 2", "Poderosa 3", "Baiana", "Bacon 1", "Bauru", "Francesa", "Suprema", "Mesclada", "Gramuth", "Lombo 1", "Lombo 2", "Lombo 3", "Lombo Nobre", "Brocolis 1", "Brocolis Super", "Brocolis Especial", "Frango 1", "Calafrango", "Crocante", "Mimosa", "Caipira", "Do Chefe", "Frangao", "Monte Neve", "Paulista", "Toscana", "Mexicana", "Calabresa Super", "Santista", "Santista 2", "Santista 3", "Kabulosa", "Mineira", "Capricho", "Champinon", "Tres Queijo", "Bacon Especial", "Escarola Especial", "Escarola Super", "Extrovertida", "Peperoni", "Portuguesa", "Quatro Queijo", "Gostosa", "Siciliana", "Tomate Seco", "Gratinada", "Jorge Tadeu", "Cinco Queijo", "Frango Super", "Palminto Especial", "Palminto Super", "Anova Mondialle", "Portuguesa Especial", "Portuguesa Super", "Light", "Amoda da Casa", "Carne Seca 1", "Carne Seca Especial", "Carne Seca Super", "Carne Seca Maluca", "Frango Super 2", "Frango Super 3", "Amoda do Cliente", "Seis Queijo", "Brigadeiro", "Confete", "Romeu e Julieta", "Banana 1", "Banana 2", "Banana 3", "Banana Nevada", "Chocolate com Uva"];
 
-const DB_KEY = 'mondiale_v18_fix';
+const DB_KEY = 'mondiale_v20_final';
 const CUSTO_FIXO = 3.20;
 
 let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
@@ -65,6 +64,7 @@ function navegar(pag) {
     else renderBackup();
 }
 
+// --- LÓGICA DE CÁLCULO ---
 function calcularUnidadeMassa() {
     let custoTotalMassa = 0;
     db.pizzas["MASSA BASE"].forEach(i => {
@@ -74,10 +74,11 @@ function calcularUnidadeMassa() {
     return custoTotalMassa / (db.rendimentoMassa || 1);
 }
 
+// --- ABA FICHAS ---
 function renderFichas() {
     let nome = db.atual;
     let itens = db.pizzas[nome] || [];
-    let custoMassaBolha = calcularUnidadeMassa();
+    let custoMassa = calcularUnidadeMassa();
     
     let html = `
         <div class="card">
@@ -86,48 +87,48 @@ function renderFichas() {
                 ${saboresFull.map(s => `<option value="${s}" ${s===nome?'selected':''}>${s.toUpperCase()}</option>`).join('')}
             </select>
             <div class="painel-resumo">
-                <div class="resumo-item">${nome==='MASSA BASE'?'RENDIMENTO':'VALOR DA MASSA'}<span class="resumo-val">${nome==='MASSA BASE' ? db.rendimentoMassa + ' un' : 'R$ ' + custoMassaBolha.toFixed(2)}</span></div>
+                <div class="resumo-item">${nome==='MASSA BASE'?'RENDIMENTO':'CUSTO DA MASSA'}<span class="resumo-val">${nome==='MASSA BASE' ? db.rendimentoMassa + ' un' : 'R$ ' + custoMassa.toFixed(2)}</span></div>
                 <div class="resumo-item">CUSTO TOTAL<span class="resumo-val" id="display-total" style="color:#48c774">R$ 0,00</span></div>
             </div>
             <table>
-                <thead><tr><th>Ingrediente</th><th style="width:100px">Qtd (g/un)</th><th style="width:80px">R$</th></tr></thead>
-                <tbody id="tabela-corpo">`;
+                <thead><tr><th>Ingrediente</th><th style="width:100px">Qtd(g)</th><th style="width:80px">R$</th></tr></thead>
+                <tbody id="tabela-fichas-corpo">`;
 
     itens.forEach((i, idx) => {
         let info = db.precos[i.item] || { preco: 0, emb: 1 };
         let valor = (info.preco / info.emb) * i.peso;
         html += `<tr>
-            <td><input class="input-tabela" list="lista-insumos" value="${i.item}" onchange="updateItem(${idx}, 'item', this.value)"></td>
-            <td><input class="input-tabela" type="number" value="${i.peso}" oninput="updateItemLive(${idx}, this.value)"></td>
-            <td class="col-custo" id="custo-${idx}">R$ ${valor.toFixed(2)}</td>
+            <td><input class="input-tabela" list="lista-insumos" value="${i.item}" onchange="updateFichaItem(${idx}, 'item', this.value)"></td>
+            <td><input class="input-tabela" type="number" value="${i.peso}" oninput="updateFichaLive(${idx}, this.value)"></td>
+            <td class="col-custo" id="custo-ficha-${idx}">R$ ${valor.toFixed(2)}</td>
         </tr>`;
     });
 
     html += `</tbody></table>
-        ${nome === 'MASSA BASE' ? `<div style="margin-top:15px">Quantas pizzas essa receita rende? <input type="number" class="input-tabela" value="${db.rendimentoMassa}" oninput="db.rendimentoMassa=this.value; recalcularTudo()"></div>` : ''}
-        <button class="btn btn-add" onclick="addLinha()">+ Ingrediente</button>
-        <button class="btn btn-save" onclick="salvar()">SALVAR FICHA</button>
+        ${nome === 'MASSA BASE' ? `<div style="margin-top:15px">Rendimento (pizzas): <input type="number" class="input-tabela" value="${db.rendimentoMassa}" oninput="db.rendimentoMassa=this.value; recalcularFichaTotal()"></div>` : ''}
+        <button class="btn btn-add" onclick="addLinhaFicha()">+ Ingrediente</button>
+        <button class="btn btn-save" onclick="salvarDB()">SALVAR FICHA</button>
     </div>`;
 
     document.getElementById('app').innerHTML = html;
-    recalcularTudo();
+    recalcularFichaTotal();
     atualizarDatalist();
 }
 
-function updateItemLive(idx, valor) {
+function updateFichaLive(idx, valor) {
     let peso = parseFloat(valor) || 0;
     db.pizzas[db.atual][idx].peso = peso;
     let info = db.precos[db.pizzas[db.atual][idx].item] || { preco: 0, emb: 1 };
-    document.getElementById(`custo-${idx}`).textContent = "R$ " + ((info.preco / info.emb) * peso).toFixed(2);
-    recalcularTudo();
+    document.getElementById(`custo-ficha-${idx}`).textContent = "R$ " + ((info.preco / info.emb) * peso).toFixed(2);
+    recalcularFichaTotal();
 }
 
-function updateItem(idx, campo, valor) {
+function updateFichaItem(idx, campo, valor) {
     db.pizzas[db.atual][idx][campo] = valor;
     renderFichas();
 }
 
-function recalcularTudo() {
+function recalcularFichaTotal() {
     let soma = 0;
     db.pizzas[db.atual].forEach(i => {
         let info = db.precos[i.item] || { preco: 0, emb: 1 };
@@ -137,64 +138,80 @@ function recalcularTudo() {
     document.getElementById('display-total').textContent = "R$ " + final.toFixed(2);
 }
 
+function addLinhaFicha() { db.pizzas[db.atual].push({item: "", peso: 0}); renderFichas(); }
+
+// --- ABA ESTOQUE (CORRIGIDA) ---
 function renderEstoque() {
-    let html = `<div class="card"><h3>Estoque e Preços</h3><table><thead><tr><th>Item</th><th>Preço R$</th><th>Emb(g/un)</th></tr></thead><tbody>`;
+    let html = `
+        <div class="card">
+            <h3>Estoque e Preços</h3>
+            <table>
+                <thead><tr><th>Item</th><th>Preço R$</th><th>Emb(g/un)</th></tr></thead>
+                <tbody id="tabela-estoque-corpo">`;
     for(let n in db.precos) {
-        html += `<tr>
-            <td><input class="input-tabela" value="${n}" oninput="editEstoqueLive('${n}', 'nome', this.value)"></td>
-            <td><input class="input-tabela" type="number" value="${db.precos[n].preco}" oninput="editEstoqueLive('${n}', 'preco', this.value)"></td>
-            <td><input class="input-tabela" type="number" value="${db.precos[n].emb}" oninput="editEstoqueLive('${n}', 'emb', this.value)"></td>
-        </tr>`;
+        html += criarLinhaEstoque(n, db.precos[n].preco, db.precos[n].emb);
     }
-    html += `</tbody></table><button class="btn btn-add" onclick="addEstoque()">+ Novo Insumo</button><button class="btn btn-save" onclick="salvar()">SALVAR FINAL</button></div>`;
+    html += `</tbody></table>
+            <button class="btn btn-add" onclick="addNovoInsumo()">+ Novo Insumo</button>
+            <button class="btn btn-save" onclick="salvarDB()">SALVAR TUDO</button>
+        </div>`;
     document.getElementById('app').innerHTML = html;
 }
 
-// CORREÇÃO: Salva no objeto DB enquanto você digita, sem recarregar a tela
-function editEstoqueLive(nomeAntigo, campo, valorNovo) {
-    if(campo === 'nome') {
-        if(nomeAntigo !== valorNovo) {
-            db.precos[valorNovo] = db.precos[nomeAntigo];
-            delete db.precos[nomeAntigo];
+function criarLinhaEstoque(nome, preco, emb) {
+    return `<tr>
+        <td><input class="input-tabela" value="${nome}" oninput="syncEstoque(this, 'nome', '${nome}')"></td>
+        <td><input class="input-tabela" type="number" value="${preco}" oninput="syncEstoque(this, 'preco', '${nome}')"></td>
+        <td><input class="input-tabela" type="number" value="${emb}" oninput="syncEstoque(this, 'emb', '${nome}')"></td>
+    </tr>`;
+}
+
+function syncEstoque(el, campo, nomeOriginal) {
+    let valor = el.value;
+    if (campo === 'nome') {
+        if (valor !== nomeOriginal && valor.trim() !== "") {
+            db.precos[valor] = db.precos[nomeOriginal];
+            delete db.precos[nomeOriginal];
+            el.oninput = function() { syncEstoque(this, 'nome', valor); };
+            let tr = el.parentElement.parentElement;
+            tr.querySelectorAll('input')[1].oninput = function() { syncEstoque(this, 'preco', valor); };
+            tr.querySelectorAll('input')[2].oninput = function() { syncEstoque(this, 'emb', valor); };
         }
     } else {
-        db.precos[nomeAntigo][campo] = parseFloat(valorNovo) || 0;
+        db.precos[nomeOriginal][campo] = parseFloat(valor) || 0;
     }
 }
 
-function addLinha() { db.pizzas[db.atual].push({item: "", peso: 0}); renderFichas(); }
-
-function addEstoque() { 
-    // Adiciona um item vazio com nome único para não dar erro
-    let idUnico = "Novo " + Object.keys(db.precos).length;
-    db.precos[idUnico] = { preco: 0, emb: 1000 }; 
-    renderEstoque(); 
+function addNovoInsumo() {
+    let tempName = "Novo " + Date.now();
+    db.precos[tempName] = { preco: 0, emb: 1000 };
+    let tr = document.createElement('tr');
+    tr.innerHTML = criarLinhaEstoque(tempName, 0, 1000);
+    document.getElementById('tabela-estoque-corpo').appendChild(tr);
 }
 
-function salvar() { 
-    localStorage.setItem(DB_KEY, JSON.stringify(db)); 
-    alert("Dados salvos com sucesso!"); 
-}
+// --- BACKUP E UTILITÁRIOS ---
+function salvarDB() { localStorage.setItem(DB_KEY, JSON.stringify(db)); alert("Salvo!"); atualizarDatalist(); }
 
-function atualizarDatalist() { 
-    document.getElementById('lista-insumos').innerHTML = Object.keys(db.precos).map(i => `<option value="${i}">`).join(''); 
+function atualizarDatalist() {
+    document.getElementById('lista-insumos').innerHTML = Object.keys(db.precos).map(i => `<option value="${i}">`).join('');
 }
 
 function renderBackup() {
     document.getElementById('app').innerHTML = `
         <div class="card">
-            <h3>Backup Mondiale 2</h3>
-            <button class="btn btn-save" onclick="exportar()">BAIXAR ARQUIVO DE BACKUP</button>
+            <h3>Backup e Segurança</h3>
+            <button class="btn btn-save" onclick="exportar()">BAIXAR BACKUP</button>
             <hr style="margin:20px 0; border:0; border-top:1px solid #eee">
-            <button class="btn btn-import" onclick="document.getElementById('file-input').click()">IMPORTAR / RECUPERAR BACKUP</button>
+            <button class="btn btn-add" style="background:#457b9d; color:white" onclick="document.getElementById('file-input').click()">RECUPERAR BACKUP</button>
             <input type="file" id="file-input" accept=".json" onchange="importar(event)">
         </div>`;
 }
 
 function exportar() {
-    const blob = new Blob([JSON.stringify(db)], {type:'application/json'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = `backup_mondiale_${new Date().toLocaleDateString()}.json`; a.click();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(db)], {type:'application/json'}));
+    a.download = 'mondiale_backup.json'; a.click();
 }
 
 function importar(event) {
@@ -202,10 +219,9 @@ function importar(event) {
     reader.onload = (e) => {
         try {
             db = JSON.parse(e.target.result);
-            localStorage.setItem(DB_KEY, JSON.stringify(db));
-            alert("Backup recuperado com sucesso!");
-            navegar('fichas');
-        } catch(err) { alert("Erro ao ler o arquivo!"); }
+            salvarDB();
+            location.reload();
+        } catch(err) { alert("Arquivo inválido!"); }
     };
     reader.readAsText(event.target.files[0]);
 }
