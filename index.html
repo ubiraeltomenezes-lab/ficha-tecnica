@@ -45,13 +45,13 @@
 <script>
 const saboresFull = ["Mussarela", "Pizza de Calabresa", "Pizza de Calabresa 2", "P.de Calabresa 3", "P.de Calabresa 4", "Presunto 1", "Presunto 2", "Presunto 3", "Catumilho", "Marguerita", "Dois Queijo", "Roma", "Atum 1", "Poderosa 1", "Poderosa 2", "Poderosa 3", "Baiana", "Bacon 1", "Bauru", "Francesa", "Suprema", "Mesclada", "Gramuth", "Lombo 1", "Lombo 2", "Lombo 3", "Lombo Nobre", "Brocolis 1", "Brocolis Super", "Brocolis Especial", "Frango 1", "Calafrango", "Crocante", "Mimosa", "Caipira", "Do Chefe", "Frangao", "Monte Neve", "Paulista", "Toscana", "Mexicana", "Calabresa Super", "Santista", "Santista 2", "Santista 3", "Kabulosa", "Mineira", "Capricho", "Champinon", "Tres Queijo", "Bacon Especial", "Escarola Especial", "Escarola Super", "Extrovertida", "Peperoni", "Portuguesa", "Quatro Queijo", "Gostosa", "Siciliana", "Tomate Seco", "Gratinada", "Jorge Tadeu", "Cinco Queijo", "Frango Super", "Palminto Especial", "Palminto Super", "Anova Mondialle", "Portuguesa Especial", "Portuguesa Super", "Light", "Amoda da Casa", "Carne Seca 1", "Carne Seca Especial", "Carne Seca Super", "Carne Seca Maluca", "Frango Super 2", "Frango Super 3", "Amoda do Cliente", "Seis Queijo", "Brigadeiro", "Confete", "Romeu e Julieta", "Banana 1", "Banana 2", "Banana 3", "Banana Nevada", "Chocolate com Uva"];
 
-const DB_KEY = 'mondiale_v17_final';
+const DB_KEY = 'mondiale_v18_fix';
 const CUSTO_FIXO = 3.20;
 
 let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
     precos: {"Farinha": { preco: 25, emb: 5000 }},
     pizzas: {"MASSA BASE": []},
-    rendimentoMassa: 20,
+    rendimentoMassa: 15,
     atual: "MASSA BASE"
 };
 
@@ -138,36 +138,54 @@ function recalcularTudo() {
 }
 
 function renderEstoque() {
-    let html = `<div class="card"><h3>Estoque e Preços</h3><table><thead><tr><th>Item</th><th>Preço R$</th><th>Emb(g)</th></tr></thead><tbody>`;
+    let html = `<div class="card"><h3>Estoque e Preços</h3><table><thead><tr><th>Item</th><th>Preço R$</th><th>Emb(g/un)</th></tr></thead><tbody>`;
     for(let n in db.precos) {
         html += `<tr>
-            <td><input class="input-tabela" value="${n}" onchange="editEstoque('${n}', 'nome', this.value)"></td>
-            <td><input class="input-tabela" type="number" value="${db.precos[n].preco}" onchange="editEstoque('${n}', 'preco', this.value)"></td>
-            <td><input class="input-tabela" type="number" value="${db.precos[n].emb}" onchange="editEstoque('${n}', 'emb', this.value)"></td>
+            <td><input class="input-tabela" value="${n}" oninput="editEstoqueLive('${n}', 'nome', this.value)"></td>
+            <td><input class="input-tabela" type="number" value="${db.precos[n].preco}" oninput="editEstoqueLive('${n}', 'preco', this.value)"></td>
+            <td><input class="input-tabela" type="number" value="${db.precos[n].emb}" oninput="editEstoqueLive('${n}', 'emb', this.value)"></td>
         </tr>`;
     }
-    html += `</tbody></table><button class="btn btn-add" onclick="addEstoque()">+ Novo Insumo</button><button class="btn btn-save" onclick="salvar()">SALVAR ESTOQUE</button></div>`;
+    html += `</tbody></table><button class="btn btn-add" onclick="addEstoque()">+ Novo Insumo</button><button class="btn btn-save" onclick="salvar()">SALVAR FINAL</button></div>`;
     document.getElementById('app').innerHTML = html;
 }
 
-function editEstoque(n, c, v) {
-    if(c === 'nome') { db.precos[v] = db.precos[n]; delete db.precos[n]; }
-    else db.precos[n][c] = parseFloat(v) || 0;
+// CORREÇÃO: Salva no objeto DB enquanto você digita, sem recarregar a tela
+function editEstoqueLive(nomeAntigo, campo, valorNovo) {
+    if(campo === 'nome') {
+        if(nomeAntigo !== valorNovo) {
+            db.precos[valorNovo] = db.precos[nomeAntigo];
+            delete db.precos[nomeAntigo];
+        }
+    } else {
+        db.precos[nomeAntigo][campo] = parseFloat(valorNovo) || 0;
+    }
 }
 
 function addLinha() { db.pizzas[db.atual].push({item: "", peso: 0}); renderFichas(); }
-function addEstoque() { db.precos["Novo"] = { preco: 0, emb: 1000 }; renderEstoque(); }
-function salvar() { localStorage.setItem(DB_KEY, JSON.stringify(db)); alert("Salvo no navegador!"); }
-function atualizarDatalist() { document.getElementById('lista-insumos').innerHTML = Object.keys(db.precos).map(i => `<option value="${i}">`).join(''); }
+
+function addEstoque() { 
+    // Adiciona um item vazio com nome único para não dar erro
+    let idUnico = "Novo " + Object.keys(db.precos).length;
+    db.precos[idUnico] = { preco: 0, emb: 1000 }; 
+    renderEstoque(); 
+}
+
+function salvar() { 
+    localStorage.setItem(DB_KEY, JSON.stringify(db)); 
+    alert("Dados salvos com sucesso!"); 
+}
+
+function atualizarDatalist() { 
+    document.getElementById('lista-insumos').innerHTML = Object.keys(db.precos).map(i => `<option value="${i}">`).join(''); 
+}
 
 function renderBackup() {
     document.getElementById('app').innerHTML = `
         <div class="card">
             <h3>Backup Mondiale 2</h3>
-            <p style="font-size:13px; color:#666">Sempre baixe um backup após mudar preços ou receitas importantes.</p>
             <button class="btn btn-save" onclick="exportar()">BAIXAR ARQUIVO DE BACKUP</button>
             <hr style="margin:20px 0; border:0; border-top:1px solid #eee">
-            <p style="font-size:13px; color:#666">Para recuperar dados, selecione o arquivo baixado anteriormente:</p>
             <button class="btn btn-import" onclick="document.getElementById('file-input').click()">IMPORTAR / RECUPERAR BACKUP</button>
             <input type="file" id="file-input" accept=".json" onchange="importar(event)">
         </div>`;
