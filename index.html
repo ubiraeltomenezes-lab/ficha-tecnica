@@ -3,40 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mondiale 2 - Gestão Completa</title>
+    <title>Mondiale 2 — Gestão & CMV de Pizzas</title>
     <style>
-        :root { --primary: #e63946; --secondary: #1d3557; --bg: #f1faee; --white: #ffffff; --accent: #48c774; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg); margin: 0; padding-bottom: 80px; }
+        :root { 
+            --primary: #e63946; 
+            --secondary: #1d3557; 
+            --bg: #f8f9fa; 
+            --white: #ffffff; 
+            --accent: #2a9d8f; 
+            --danger: #d90429;
+            --gray: #f1f3f5;
+            --success-bg: #e6f4ea;
+            --success-border: #2b8a3e;
+        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg); margin: 0; padding-bottom: 90px; color: #333; }
         .header { background: var(--secondary); color: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--primary); }
-        .container { padding: 15px; max-width: 800px; margin: auto; }
-        .card { background: var(--white); padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        select { width: 100%; padding: 12px; border-radius: 8px; font-size: 16px; margin-bottom: 15px; border: 2px solid var(--secondary); background: #fff; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { text-align: left; padding: 10px 5px; border-bottom: 1px solid #eee; font-size: 14px; }
-        .input-tabela { width: 100%; border: 1px solid #ddd; border-radius: 4px; padding: 10px; font-size: 16px; background: #fffde7; }
-        .col-custo { color: #2b8a3e; font-weight: bold; text-align: right; }
-        .painel-resumo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: var(--secondary); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-        .resumo-item { text-align: center; }
-        .resumo-val { display: block; font-size: 1.1rem; font-weight: bold; color: #a2d2ff; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .header h2 { margin: 0; font-size: 1.4rem; letter-spacing: 1px; }
+        .container { padding: 15px; max-width: 850px; margin: auto; }
+        .card { background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        
+        select, input { font-size: 15px; }
+        select { width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 2px solid var(--secondary); background: #fff; font-weight: bold; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #eee; }
+        th { font-size: 12px; color: #666; text-transform: uppercase; }
+        
+        .input-tabela { width: 100%; border: 1px solid #ccc; border-radius: 6px; padding: 8px; background: #fff; }
+        .input-tabela:focus { border-color: var(--primary); outline: none; background: #fffde7; }
+        
+        .col-custo { color: #2b8a3e; font-weight: bold; text-align: right; white-space: nowrap; }
+        
+        /* Estilos de linha da tabela na lista */
+        tr.pizza-com-ingrediente { background-color: var(--success-bg); }
+        tr.pizza-sem-ingrediente { opacity: 0.7; }
+        
+        .painel-resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; background: var(--secondary); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .resumo-item { text-align: center; font-size: 0.85rem; }
+        .resumo-val { display: block; font-size: 1.2rem; font-weight: bold; color: #a2d2ff; margin-top: 4px; }
+        
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: opacity 0.2s; }
+        .btn:hover { opacity: 0.9; }
         .btn-save { background: var(--accent); color: white; }
-        .btn-add { background: #1d3557; color: #fff; }
-        .tabs-fixas { position: fixed; bottom: 0; width: 100%; display: flex; background: var(--secondary); border-top: 3px solid var(--primary); }
-        .tab-btn { flex: 1; padding: 15px; color: white; border: none; background: none; font-weight: bold; cursor: pointer; }
+        .btn-add { background: var(--secondary); color: #fff; }
+        .btn-voltar { background: #6c757d; color: white; margin-bottom: 15px; }
+        .btn-del { background: var(--danger); color: white; padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-editar { background: #3a86ef; color: white; padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        
+        .tabs-fixas { position: fixed; bottom: 0; width: 100%; display: flex; background: var(--secondary); border-top: 3px solid var(--primary); z-index: 100; }
+        .tab-btn { flex: 1; padding: 15px; color: white; border: none; background: none; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
         .tab-btn.active { background: var(--primary); }
         #file-input { display: none; }
+        
+        .field-group { display: flex; align-items: center; gap: 10px; margin-top: 15px; background: var(--gray); padding: 10px; border-radius: 8px; }
+        .field-group label { font-weight: bold; font-size: 14px; flex: 1; }
+        .field-group input { width: 120px; text-align: right; }
+        
+        .badge-cmv { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; }
+        .cmv-bom { background: #d4edda; color: #155724; }
+        .cmv-alto { background: #f8d7da; color: #721c24; }
+        .badge-status { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
+        .status-pronto { background: #2b8a3e; color: #fff; }
+        .status-vazio { background: #ced4da; color: #495057; }
     </style>
 </head>
 <body>
 
-<div class="header"><h2>MONDIALE 2</h2></div>
+<div class="header"><h2>MONDIALE 2 — GESTÃO DE CMV</h2></div>
 <div class="container" id="app"></div>
 
 <div class="tabs-fixas">
-    <button class="tab-btn active" id="btn-fichas" onclick="navegar('fichas')">FICHAS</button>
-    <button class="tab-btn" id="btn-estoque" onclick="navegar('estoque')">ESTOQUE</button>
-    <button class="tab-btn" id="btn-backup" onclick="navegar('backup')">BACKUP</button>
+    <button class="tab-btn active" id="btn-fichas" onclick="modoEdicao=false; navegar('fichas')">PIZZAS / FICHAS</button>
+    <button class="tab-btn" id="btn-estoque" onclick="modoEdicao=false; navegar('estoque')">ESTOQUE</button>
+    <button class="tab-btn" id="btn-backup" onclick="modoEdicao=false; navegar('backup')">BACKUP</button>
 </div>
 
 <datalist id="lista-insumos"></datalist>
@@ -55,107 +95,151 @@ const listaPadrao = {
     "parmesao": { preco: 75.00, emb: 1000 }, "gorgonzola": { preco: 78.00, emb: 1000 },
     "provolone": { preco: 63.00, emb: 1000 }, "batata palha": { preco: 25.00, emb: 800 },
     "lombo": { preco: 34.00, emb: 1000 }, "brocolis": { preco: 12.00, emb: 1000 },
-    "frango pizza": { preco: 20.00, emb: 1000 }, "champignon": { preco: 0, emb: 1000 },
+    "frango pizza": { preco: 20.00, emb: 1000 }, "champignon": { preco: 15.00, emb: 1000 },
     "bacon": { preco: 30.00, emb: 1000 }, "atum": { preco: 7.00, emb: 1 },
-    "escarola": { preco: 0, emb: 1000 }, "peperoni": { preco: 65.00, emb: 1000 },
-    "tomate seco": { preco: 0, emb: 1000 }, "carne seca": { preco: 250.00, emb: 5000 },
+    "escarola": { preco: 8.00, emb: 1000 }, "peperoni": { preco: 65.00, emb: 1000 },
+    "tomate seco": { preco: 35.00, emb: 1000 }, "carne seca": { preco: 250.00, emb: 5000 },
     "palmito": { preco: 30.00, emb: 1500 }, "banana": { preco: 7.00, emb: 1000 },
     "chocolate": { preco: 32.00, emb: 1000 }, "chocolate branco": { preco: 45.00, emb: 1000 },
-    "uva": { preco: 10.00, emb: 1000 }, "goibada": { preco: 0, emb: 1000 }
+    "uva": { preco: 10.00, emb: 1000 }, "goiabada": { preco: 12.00, emb: 1000 }
 };
 
-const DB_KEY = 'mondiale_v23';
-const CUSTO_FIXO = 3.20;
+const DB_KEY = 'mondiale_v26';
+const CUSTO_FIXO_EMBALAGEM = 3.20;
 
 let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
     precos: listaPadrao,
     pizzas: {"MASSA BASE": []},
+    precosVenda: {},
     rendimentoMassa: 15,
     atual: "MASSA BASE"
 };
 
+let modoEdicao = false;
+
 function navegar(pag) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('btn-' + pag).classList.add('active');
-    if(pag === 'fichas') renderFichas();
+    if(pag === 'fichas') {
+        if(modoEdicao) renderFichaEdicao();
+        else renderListaPizzas();
+    }
     else if(pag === 'estoque') renderEstoque();
     else renderBackup();
 }
 
-// --- ESTOQUE SEM BUG ---
-function renderEstoque() {
+// --- LISTA DE PIZZAS (COM DESTAQUE POR CORES) ---
+function renderListaPizzas() {
+    let totalCadastradas = 0;
+    saboresFull.forEach(s => {
+        if (db.pizzas[s] && db.pizzas[s].length > 0) totalCadastradas++;
+    });
+
+    let massaConfigurada = db.pizzas["MASSA BASE"] && db.pizzas["MASSA BASE"].length > 0;
+
     let html = `
         <div class="card">
-            <h3>Estoque (image_58ac14.png)</h3>
-            <table>
-                <thead><tr><th>Item</th><th>R$ Preço</th><th>Emb (g/un)</th></tr></thead>
-                <tbody id="corpo-estoque">`;
-    
-    for (let n in db.precos) {
-        html += criarLinhaEstoque(n, db.precos[n].preco, db.precos[n].emb);
-    }
+            <h3>Lista de Pizzas e Custos</h3>
+            
+            <div class="painel-resumo">
+                <div class="resumo-item">
+                    FICHAS PRONTAS
+                    <span class="resumo-val">${totalCadastradas} / ${saboresFull.length}</span>
+                </div>
+                <div class="resumo-item">
+                    MASSA BASE
+                    <span class="resumo-val" style="color: ${massaConfigurada ? '#48c774' : '#ff4d4d'}">
+                        ${massaConfigurada ? 'OK' : 'PENDENTE'}
+                    </span>
+                </div>
+            </div>
 
-    html += `</tbody></table>
-            <button class="btn btn-add" onclick="addNovoItemEstoque()">+ NOVO ITEM NO ESTOQUE</button>
-            <button class="btn btn-save" onclick="salvar()">SALVAR TUDO</button>
-        </div>`;
+            <button class="btn btn-add" style="margin-bottom:15px" onclick="abrirEdicao('MASSA BASE')">🍞 CONFIGURAR MASSA BASE</button>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sabor</th>
+                        <th style="text-align:right">Custo (CMV)</th>
+                        <th style="text-align:right">CMV %</th>
+                        <th style="text-align:center">Ação</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+    saboresFull.forEach(sabor => {
+        let temIngredientes = db.pizzas[sabor] && db.pizzas[sabor].length > 0;
+        let custo = calcularCustoTotalPizza(sabor);
+        let precoVenda = db.precosVenda[sabor] || 0;
+        let cmvPct = precoVenda > 0 ? ((custo / precoVenda) * 100).toFixed(1) : 0;
+        let badgeClass = cmvPct > 0 && cmvPct <= 35 ? 'cmv-bom' : (cmvPct > 35 ? 'cmv-alto' : '');
+        let classeLinha = temIngredientes ? 'pizza-com-ingrediente' : 'pizza-sem-ingrediente';
+
+        html += `
+            <tr class="${classeLinha}">
+                <td>
+                    <strong>${sabor}</strong><br>
+                    ${temIngredientes 
+                        ? `<span class="badge-status status-pronto">Ficha Pronta</span>` 
+                        : `<span class="badge-status status-vazio">Sem Ingredientes</span>`}
+                </td>
+                <td style="text-align:right" class="col-custo">R$ ${custo.toFixed(2)}</td>
+                <td style="text-align:right">
+                    ${cmvPct > 0 ? `<span class="badge-cmv ${badgeClass}">${cmvPct}%</span>` : '<span style="color:#aaa">-</span>'}
+                </td>
+                <td style="text-align:center">
+                    <button class="btn-editar" onclick="abrirEdicao('${sabor}')">Editar</button>
+                </td>
+            </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
     document.getElementById('app').innerHTML = html;
 }
 
-function criarLinhaEstoque(nome, preco, emb) {
-    return `<tr>
-        <td><input class="input-tabela" value="${nome}" oninput="syncEstoque(this, 'nome', '${nome}')"></td>
-        <td><input type="number" step="0.01" class="input-tabela" value="${preco}" oninput="syncEstoque(this, 'preco', '${nome}')"></td>
-        <td><input type="number" class="input-tabela" value="${emb}" oninput="syncEstoque(this, 'emb', '${nome}')"></td>
-    </tr>`;
+function abrirEdicao(sabor) {
+    db.atual = sabor;
+    modoEdicao = true;
+    renderFichaEdicao();
 }
 
-function syncEstoque(el, campo, nomeOriginal) {
-    let valor = el.value;
-    if (campo === 'nome') {
-        if (valor !== nomeOriginal && valor.trim() !== "") {
-            db.precos[valor] = db.precos[nomeOriginal];
-            delete db.precos[nomeOriginal];
-            // Atualiza os eventos para o novo nome
-            el.oninput = function() { syncEstoque(this, 'nome', valor); };
-            let tr = el.parentElement.parentElement;
-            tr.querySelectorAll('input')[1].oninput = function() { syncEstoque(this, 'preco', valor); };
-            tr.querySelectorAll('input')[2].oninput = function() { syncEstoque(this, 'emb', valor); };
-        }
-    } else {
-        db.precos[nomeOriginal][campo] = parseFloat(valor) || 0;
-    }
+function voltarParaLista() {
+    modoEdicao = false;
+    renderListaPizzas();
 }
 
-function addNovoItemEstoque() {
-    let idUnico = "Novo_" + Date.now();
-    db.precos[idUnico] = { preco: 0, emb: 1000 };
-    
-    // Adiciona apenas a linha, sem resetar a tabela toda
-    let tabela = document.getElementById('corpo-estoque');
-    let tr = document.createElement('tr');
-    tr.innerHTML = criarLinhaEstoque(idUnico, 0, 1000);
-    tabela.appendChild(tr);
-}
-
-// --- FICHAS TÉCNICAS ---
-function renderFichas() {
+// --- FICHAS TÉCNICAS (MODO EDIÇÃO) ---
+function renderFichaEdicao() {
     let nome = db.atual;
     if(!db.pizzas[nome]) db.pizzas[nome] = [];
-    let custoMassa = calcularMassa();
+    if(!db.precosVenda) db.precosVenda = {};
+    if(!db.precosVenda[nome]) db.precosVenda[nome] = 0;
+
+    let custoMassa = calcularMassaUnitarias();
     
     let html = `
         <div class="card">
-            <select onchange="db.atual=this.value; renderFichas()">
-                <option value="MASSA BASE" ${nome==='MASSA BASE'?'selected':''}>🍞 CONFIGURAR MASSA BASE</option>
-                ${saboresFull.map(s => `<option value="${s}" ${s===nome?'selected':''}>${s.toUpperCase()}</option>`).join('')}
-            </select>
+            <button class="btn btn-voltar" onclick="voltarParaLista()">← VOLTAR PARA A LISTA</button>
+            <h3 style="margin-top:0">${nome === 'MASSA BASE' ? '🍞 Configuração da Massa Base' : '🍕 ' + nome.toUpperCase()}</h3>
+            
             <div class="painel-resumo">
-                <div class="resumo-item">${nome==='MASSA BASE'?'RENDIMENTO':'VALOR DA MASSA'}<span class="resumo-val">${nome==='MASSA BASE' ? db.rendimentoMassa + ' un' : 'R$ ' + custoMassa.toFixed(2)}</span></div>
-                <div class="resumo-item">CUSTO TOTAL<span class="resumo-val" id="total-f" style="color:#48c774">R$ 0,00</span></div>
+                <div class="resumo-item">
+                    ${nome==='MASSA BASE'?'RENDIMENTO':'CUSTO DA MASSA'}
+                    <span class="resumo-val">${nome==='MASSA BASE' ? db.rendimentoMassa + ' un' : 'R$ ' + custoMassa.toFixed(2)}</span>
+                </div>
+                <div class="resumo-item">
+                    CUSTO TOTAL (CMV R$)
+                    <span class="resumo-val" id="total-f" style="color:#48c774">R$ 0,00</span>
+                </div>
+                ${nome !== 'MASSA BASE' ? `
+                <div class="resumo-item">
+                    CMV (%)
+                    <span class="resumo-val" id="cmv-pct" style="color:#ffd166">0%</span>
+                </div>` : ''}
             </div>
+
             <table>
-                <thead><tr><th>Ingrediente</th><th>Qtd</th><th>R$</th></tr></thead>
+                <thead><tr><th>Ingrediente</th><th style="width:100px">Qtd (g/un)</th><th style="width:90px">Custo</th><th style="width:40px"></th></tr></thead>
                 <tbody id="corpo-fichas">`;
 
     db.pizzas[nome].forEach((i, idx) => {
@@ -165,13 +249,27 @@ function renderFichas() {
             <td><input class="input-tabela" list="lista-insumos" value="${i.item}" onchange="updateFichaItem(${idx}, 'item', this.value)"></td>
             <td><input class="input-tabela" type="number" value="${i.peso}" oninput="updateFichaLive(${idx}, this.value)"></td>
             <td class="col-custo" id="c-f-${idx}">R$ ${valor.toFixed(2)}</td>
+            <td><button class="btn-del" onclick="removerLinhaFicha(${idx})">✕</button></td>
         </tr>`;
     });
 
-    html += `</tbody></table>
-        ${nome === 'MASSA BASE' ? `<div style="margin-top:10px">Rendimento (un): <input type="number" class="input-tabela" value="${db.rendimentoMassa}" oninput="db.rendimentoMassa=this.value; recalcularF()"></div>` : ''}
-        <button class="btn btn-add" onclick="addLinhaFicha()">+ INGREDIENTE NA PIZZA</button>
-        <button class="btn btn-save" onclick="salvar()">SALVAR FICHA</button>
+    html += `</tbody></table>`;
+
+    if (nome === 'MASSA BASE') {
+        html += `<div class="field-group">
+            <label>Rendimento da Receita (porções/massa):</label>
+            <input type="number" class="input-tabela" value="${db.rendimentoMassa}" oninput="db.rendimentoMassa=parseFloat(this.value)||1; recalcularF()">
+        </div>`;
+    } else {
+        html += `<div class="field-group">
+            <label>Preço de Venda Praticado (R$):</label>
+            <input type="number" step="0.01" class="input-tabela" value="${db.precosVenda[nome] || ''}" placeholder="0.00" oninput="db.precosVenda['${nome}']=parseFloat(this.value)||0; recalcularF()">
+        </div>`;
+    }
+
+    html += `
+        <button class="btn btn-add" onclick="addLinhaFicha()">+ ADICIONAR INGREDIENTE</button>
+        <button class="btn btn-save" onclick="salvarEFechar()">SALVAR FICHA E VOLTAR</button>
     </div>`;
 
     document.getElementById('app').innerHTML = html;
@@ -179,66 +277,174 @@ function renderFichas() {
     atualizarDatalist();
 }
 
-function updateFichaLive(idx, v) {
-    db.pizzas[db.atual][idx].peso = parseFloat(v) || 0;
+function updateFichaLive(idx, pesoVal) {
+    db.pizzas[db.atual][idx].peso = parseFloat(pesoVal) || 0;
     let i = db.pizzas[db.atual][idx];
     let info = db.precos[i.item] || { preco: 0, emb: 1 };
-    document.getElementById(`c-f-${idx}`).textContent = "R$ " + ((info.preco/info.emb)*i.peso).toFixed(2);
+    document.getElementById(`c-f-${idx}`).textContent = "R$ " + ((info.preco / info.emb) * i.peso).toFixed(2);
     recalcularF();
 }
 
-function updateFichaItem(idx, c, v) { db.pizzas[db.atual][idx][c] = v; renderFichas(); }
+function updateFichaItem(idx, campo, valor) { 
+    db.pizzas[db.atual][idx][campo] = valor; 
+    renderFichaEdicao(); 
+}
 
-function addLinhaFicha() { db.pizzas[db.atual].push({item: "", peso: 0}); renderFichas(); }
+function addLinhaFicha() { 
+    db.pizzas[db.atual].push({item: "", peso: 0}); 
+    renderFichaEdicao(); 
+}
 
-function calcularMassa() {
+function removerLinhaFicha(idx) {
+    db.pizzas[db.atual].splice(idx, 1);
+    renderFichaEdicao();
+}
+
+function calcularMassaUnitarias() {
     let soma = 0;
-    db.pizzas["MASSA BASE"].forEach(i => {
+    (db.pizzas["MASSA BASE"] || []).forEach(i => {
         let info = db.precos[i.item] || { preco: 0, emb: 1 };
         soma += (info.preco / info.emb) * i.peso;
     });
     return soma / (db.rendimentoMassa || 1);
 }
 
-function recalcularF() {
-    let soma = 0;
-    db.pizzas[db.atual].forEach(i => {
+function calcularCustoTotalPizza(nomeSabor) {
+    let somaRecheio = 0;
+    (db.pizzas[nomeSabor] || []).forEach(i => {
         let info = db.precos[i.item] || { preco: 0, emb: 1 };
-        soma += (info.preco / info.emb) * i.peso;
+        somaRecheio += (info.preco / info.emb) * i.peso;
     });
-    let final = db.atual === "MASSA BASE" ? soma : (soma + calcularMassa() + CUSTO_FIXO);
-    document.getElementById('total-f').textContent = "R$ " + final.toFixed(2);
+    return nomeSabor === "MASSA BASE" ? somaRecheio : (somaRecheio + calcularMassaUnitarias() + CUSTO_FIXO_EMBALAGEM);
+}
+
+function recalcularF() {
+    let custoFinal = calcularCustoTotalPizza(db.atual);
+    document.getElementById('total-f').textContent = "R$ " + custoFinal.toFixed(2);
+
+    if (db.atual !== "MASSA BASE") {
+        let precoVenda = db.precosVenda[db.atual] || 0;
+        let cmvPct = precoVenda > 0 ? ((custoFinal / precoVenda) * 100).toFixed(1) : "0.0";
+        let elemCmv = document.getElementById('cmv-pct');
+        if (elemCmv) {
+            elemCmv.textContent = cmvPct + "%";
+            elemCmv.style.color = parseFloat(cmvPct) > 35 ? "#ff4d4d" : "#48c774";
+        }
+    }
+}
+
+function salvarEFechar() {
+    // Filtra ingredientes vazios antes de salvar
+    db.pizzas[db.atual] = db.pizzas[db.atual].filter(ing => ing.item.trim() !== "");
+    
+    localStorage.setItem(DB_KEY, JSON.stringify(db));
+    alert("Ficha salva com sucesso!");
+    voltarParaLista();
+}
+
+// --- ESTOQUE ---
+function renderEstoque() {
+    let html = `
+        <div class="card">
+            <h3>Estoque e Preço dos Insumos</h3>
+            <table>
+                <thead>
+                    <tr><th>Item</th><th>Preço (R$)</th><th>Emb (g/un)</th><th>Ação</th></tr>
+                </thead>
+                <tbody id="corpo-estoque">`;
+    
+    for (let item in db.precos) {
+        html += criarLinhaEstoque(item, db.precos[item].preco, db.precos[item].emb);
+    }
+
+    html += `</tbody></table>
+            <button class="btn btn-add" onclick="addNovoItemEstoque()">+ NOVO ITEM</button>
+            <button class="btn btn-save" onclick="salvar()">SALVAR ESTOQUE</button>
+        </div>`;
+    document.getElementById('app').innerHTML = html;
+}
+
+function criarLinhaEstoque(nome, preco, emb) {
+    return `<tr id="row-est-${nome.replace(/\s+/g, '-')}">
+        <td><input class="input-tabela" value="${nome}" onchange="alterarNomeInsumo('${nome}', this.value)"></td>
+        <td><input type="number" step="0.01" class="input-tabela" value="${preco}" oninput="db.precos['${nome}'].preco = parseFloat(this.value)||0"></td>
+        <td><input type="number" class="input-tabela" value="${emb}" oninput="db.precos['${nome}'].emb = parseFloat(this.value)||1"></td>
+        <td><button class="btn-del" onclick="removerInsumo('${nome}')">✕</button></td>
+    </tr>`;
+}
+
+function alterarNomeInsumo(antigoNome, novoNome) {
+    novoNome = novoNome.trim();
+    if (!novoNome || antigoNome === novoNome) return;
+    
+    db.precos[novoNome] = db.precos[antigoNome];
+    delete db.precos[antigoNome];
+
+    for (let pizza in db.pizzas) {
+        db.pizzas[pizza].forEach(ing => {
+            if (ing.item === antigoNome) ing.item = novoNome;
+        });
+    }
+    renderEstoque();
+}
+
+function addNovoItemEstoque() {
+    let idUnico = "Novo Insumo " + Math.floor(Math.random() * 1000);
+    db.precos[idUnico] = { preco: 0, emb: 1000 };
+    renderEstoque();
+}
+
+function removerInsumo(nome) {
+    if (confirm(`Remover "${nome}" do estoque?`)) {
+        delete db.precos[nome];
+        renderEstoque();
+    }
 }
 
 // --- UTILITÁRIOS ---
-function salvar() { localStorage.setItem(DB_KEY, JSON.stringify(db)); alert("Salvo!"); atualizarDatalist(); }
+function salvar() { 
+    localStorage.setItem(DB_KEY, JSON.stringify(db)); 
+    alert("Dados salvos com sucesso!"); 
+    atualizarDatalist(); 
+}
 
 function atualizarDatalist() { 
-    document.getElementById('lista-insumos').innerHTML = Object.keys(db.precos).map(i => `<option value="${i}">`).join(''); 
+    document.getElementById('lista-insumos').innerHTML = Object.keys(db.precos).sort().map(i => `<option value="${i}">`).join(''); 
 }
 
 function renderBackup() {
     document.getElementById('app').innerHTML = `
         <div class="card">
-            <h3>Backup</h3>
-            <button class="btn btn-save" onclick="exportar()">BAIXAR ARQUIVO</button>
-            <button class="btn btn-add" onclick="document.getElementById('file-input').click()">SUBIR ARQUIVO</button>
+            <h3>Backup / Restauração</h3>
+            <p style="font-size: 14px; color: #666;">Exporte seus dados para não perder as fichas técnicas ou importe de outro aparelho.</p>
+            <button class="btn btn-save" onclick="exportar()">BAIXAR BACKUP (JSON)</button>
+            <button class="btn btn-add" onclick="document.getElementById('file-input').click()">RESTAURAR BACKUP</button>
             <input type="file" id="file-input" accept=".json" onchange="importar(event)">
         </div>`;
 }
 
 function exportar() {
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([JSON.stringify(db)], {type:'application/json'}));
-    a.download = 'backup_mondiale.json'; a.click();
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(db, null, 2)], {type:'application/json'}));
+    a.download = `backup_mondiale_${new Date().toISOString().slice(0,10)}.json`; 
+    a.click();
 }
 
 function importar(event) {
     const reader = new FileReader();
-    reader.onload = (e) => { db = JSON.parse(e.target.result); salvar(); location.reload(); };
+    reader.onload = (e) => { 
+        try {
+            db = JSON.parse(e.target.result); 
+            salvar(); 
+            location.reload(); 
+        } catch(err) {
+            alert("Arquivo JSON inválido.");
+        }
+    };
     reader.readAsText(event.target.files[0]);
 }
 
+// Inicialização
 navegar('fichas');
 </script>
 </body>
