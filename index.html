@@ -14,7 +14,6 @@
             --danger: #d90429;
             --gray: #f1f3f5;
             --success-bg: #e6f4ea;
-            --success-border: #2b8a3e;
         }
         * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background-color: var(--bg); margin: 0; padding-bottom: 90px; color: #333; }
@@ -35,9 +34,8 @@
         
         .col-custo { color: #2b8a3e; font-weight: bold; text-align: right; white-space: nowrap; }
         
-        /* Estilos de linha da tabela na lista */
         tr.pizza-com-ingrediente { background-color: var(--success-bg); }
-        tr.pizza-sem-ingrediente { opacity: 0.7; }
+        tr.pizza-sem-ingrediente { opacity: 0.75; }
         
         .painel-resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; background: var(--secondary); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
         .resumo-item { text-align: center; font-size: 0.85rem; }
@@ -104,7 +102,7 @@ const listaPadrao = {
     "uva": { preco: 10.00, emb: 1000 }, "goiabada": { preco: 12.00, emb: 1000 }
 };
 
-const DB_KEY = 'mondiale_v26';
+const DB_KEY = 'mondiale_v27';
 const CUSTO_FIXO_EMBALAGEM = 3.20;
 
 let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
@@ -128,7 +126,7 @@ function navegar(pag) {
     else renderBackup();
 }
 
-// --- LISTA DE PIZZAS (COM DESTAQUE POR CORES) ---
+// --- LISTA DE PIZZAS ---
 function renderListaPizzas() {
     let totalCadastradas = 0;
     saboresFull.forEach(s => {
@@ -208,7 +206,7 @@ function voltarParaLista() {
     renderListaPizzas();
 }
 
-// --- FICHAS TÉCNICAS (MODO EDIÇÃO) ---
+// --- FICHAS TÉCNICAS (EDIÇÃO) ---
 function renderFichaEdicao() {
     let nome = db.atual;
     if(!db.pizzas[nome]) db.pizzas[nome] = [];
@@ -258,12 +256,12 @@ function renderFichaEdicao() {
     if (nome === 'MASSA BASE') {
         html += `<div class="field-group">
             <label>Rendimento da Receita (porções/massa):</label>
-            <input type="number" class="input-tabela" value="${db.rendimentoMassa}" oninput="db.rendimentoMassa=parseFloat(this.value)||1; recalcularF()">
+            <input type="number" class="input-tabela" value="${db.rendimentoMassa}" oninput="db.rendimentoMassa=parseFloat(this.value)||1; salvarSilencioso(); recalcularF()">
         </div>`;
     } else {
         html += `<div class="field-group">
             <label>Preço de Venda Praticado (R$):</label>
-            <input type="number" step="0.01" class="input-tabela" value="${db.precosVenda[nome] || ''}" placeholder="0.00" oninput="db.precosVenda['${nome}']=parseFloat(this.value)||0; recalcularF()">
+            <input type="number" step="0.01" class="input-tabela" value="${db.precosVenda[nome] || ''}" placeholder="0.00" oninput="db.precosVenda['${nome}']=parseFloat(this.value)||0; salvarSilencioso(); recalcularF()">
         </div>`;
     }
 
@@ -282,21 +280,25 @@ function updateFichaLive(idx, pesoVal) {
     let i = db.pizzas[db.atual][idx];
     let info = db.precos[i.item] || { preco: 0, emb: 1 };
     document.getElementById(`c-f-${idx}`).textContent = "R$ " + ((info.preco / info.emb) * i.peso).toFixed(2);
+    salvarSilencioso();
     recalcularF();
 }
 
 function updateFichaItem(idx, campo, valor) { 
     db.pizzas[db.atual][idx][campo] = valor; 
+    salvarSilencioso();
     renderFichaEdicao(); 
 }
 
 function addLinhaFicha() { 
     db.pizzas[db.atual].push({item: "", peso: 0}); 
+    salvarSilencioso();
     renderFichaEdicao(); 
 }
 
 function removerLinhaFicha(idx) {
     db.pizzas[db.atual].splice(idx, 1);
+    salvarSilencioso();
     renderFichaEdicao();
 }
 
@@ -334,19 +336,18 @@ function recalcularF() {
 }
 
 function salvarEFechar() {
-    // Filtra ingredientes vazios antes de salvar
     db.pizzas[db.atual] = db.pizzas[db.atual].filter(ing => ing.item.trim() !== "");
-    
-    localStorage.setItem(DB_KEY, JSON.stringify(db));
+    salvarSilencioso();
     alert("Ficha salva com sucesso!");
     voltarParaLista();
 }
 
-// --- ESTOQUE ---
+// --- ESTOQUE (SALVAMENTO EM TEMPO REAL) ---
 function renderEstoque() {
     let html = `
         <div class="card">
             <h3>Estoque e Preço dos Insumos</h3>
+            <p style="font-size: 13px; color: #666;">As alterações são salvas automaticamente.</p>
             <table>
                 <thead>
                     <tr><th>Item</th><th>Preço (R$)</th><th>Emb (g/un)</th><th>Ação</th></tr>
@@ -359,18 +360,23 @@ function renderEstoque() {
 
     html += `</tbody></table>
             <button class="btn btn-add" onclick="addNovoItemEstoque()">+ NOVO ITEM</button>
-            <button class="btn btn-save" onclick="salvar()">SALVAR ESTOQUE</button>
+            <button class="btn btn-save" onclick="salvarComAlerta()">SALVAR TUDO</button>
         </div>`;
     document.getElementById('app').innerHTML = html;
 }
 
 function criarLinhaEstoque(nome, preco, emb) {
-    return `<tr id="row-est-${nome.replace(/\s+/g, '-')}">
+    return `<tr>
         <td><input class="input-tabela" value="${nome}" onchange="alterarNomeInsumo('${nome}', this.value)"></td>
-        <td><input type="number" step="0.01" class="input-tabela" value="${preco}" oninput="db.precos['${nome}'].preco = parseFloat(this.value)||0"></td>
-        <td><input type="number" class="input-tabela" value="${emb}" oninput="db.precos['${nome}'].emb = parseFloat(this.value)||1"></td>
+        <td><input type="number" step="0.01" class="input-tabela" value="${preco}" oninput="atualizarEstoqueItem('${nome}', 'preco', this.value)"></td>
+        <td><input type="number" class="input-tabela" value="${emb}" oninput="atualizarEstoqueItem('${nome}', 'emb', this.value)"></td>
         <td><button class="btn-del" onclick="removerInsumo('${nome}')">✕</button></td>
     </tr>`;
+}
+
+function atualizarEstoqueItem(nome, campo, valor) {
+    db.precos[nome][campo] = parseFloat(valor) || 0;
+    salvarSilencioso();
 }
 
 function alterarNomeInsumo(antigoNome, novoNome) {
@@ -385,31 +391,41 @@ function alterarNomeInsumo(antigoNome, novoNome) {
             if (ing.item === antigoNome) ing.item = novoNome;
         });
     }
+    salvarSilencioso();
     renderEstoque();
 }
 
 function addNovoItemEstoque() {
     let idUnico = "Novo Insumo " + Math.floor(Math.random() * 1000);
     db.precos[idUnico] = { preco: 0, emb: 1000 };
+    salvarSilencioso();
     renderEstoque();
 }
 
 function removerInsumo(nome) {
     if (confirm(`Remover "${nome}" do estoque?`)) {
         delete db.precos[nome];
+        salvarSilencioso();
         renderEstoque();
     }
 }
 
 // --- UTILITÁRIOS ---
-function salvar() { 
-    localStorage.setItem(DB_KEY, JSON.stringify(db)); 
-    alert("Dados salvos com sucesso!"); 
-    atualizarDatalist(); 
+function salvarSilencioso() {
+    localStorage.setItem(DB_KEY, JSON.stringify(db));
+    atualizarDatalist();
+}
+
+function salvarComAlerta() {
+    salvarSilencioso();
+    alert("Dados salvos com sucesso!");
 }
 
 function atualizarDatalist() { 
-    document.getElementById('lista-insumos').innerHTML = Object.keys(db.precos).sort().map(i => `<option value="${i}">`).join(''); 
+    let datalist = document.getElementById('lista-insumos');
+    if(datalist) {
+        datalist.innerHTML = Object.keys(db.precos).sort().map(i => `<option value="${i}">`).join(''); 
+    }
 }
 
 function renderBackup() {
@@ -435,7 +451,7 @@ function importar(event) {
     reader.onload = (e) => { 
         try {
             db = JSON.parse(e.target.result); 
-            salvar(); 
+            salvarSilencioso(); 
             location.reload(); 
         } catch(err) {
             alert("Arquivo JSON inválido.");
