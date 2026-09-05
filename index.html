@@ -19,27 +19,28 @@
         body { background-color: var(--bg); margin: 0; padding-bottom: 90px; color: #333; }
         .header { background: var(--secondary); color: white; padding: 15px; text-align: center; border-bottom: 4px solid var(--primary); }
         .header h2 { margin: 0; font-size: 1.4rem; letter-spacing: 1px; }
-        .container { padding: 15px; max-width: 850px; margin: auto; }
+        .container { padding: 15px; max-width: 900px; margin: auto; }
         .card { background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 20px; }
         
         select, input { font-size: 15px; }
         select { width: 100%; padding: 12px; border-radius: 8px; margin-bottom: 15px; border: 2px solid var(--secondary); background: #fff; font-weight: bold; }
         
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid #eee; }
-        th { font-size: 12px; color: #666; text-transform: uppercase; }
+        th, td { text-align: left; padding: 10px 6px; border-bottom: 1px solid #eee; }
+        th { font-size: 11px; color: #666; text-transform: uppercase; }
         
         .input-tabela { width: 100%; border: 1px solid #ccc; border-radius: 6px; padding: 8px; background: #fff; }
         .input-tabela:focus { border-color: var(--primary); outline: none; background: #fffde7; }
         
-        .col-custo { color: #2b8a3e; font-weight: bold; text-align: right; white-space: nowrap; }
+        .col-custo { color: #d90429; font-weight: bold; text-align: right; white-space: nowrap; }
+        .col-ganho { color: #2b8a3e; font-weight: bold; text-align: right; white-space: nowrap; }
         
         tr.pizza-com-ingrediente { background-color: var(--success-bg); }
         tr.pizza-sem-ingrediente { opacity: 0.75; }
         
-        .painel-resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; background: var(--secondary); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
-        .resumo-item { text-align: center; font-size: 0.85rem; }
-        .resumo-val { display: block; font-size: 1.2rem; font-weight: bold; color: #a2d2ff; margin-top: 4px; }
+        .painel-resumo { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; background: var(--secondary); color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        .resumo-item { text-align: center; font-size: 0.8rem; }
+        .resumo-val { display: block; font-size: 1.1rem; font-weight: bold; color: #a2d2ff; margin-top: 4px; }
         
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; transition: opacity 0.2s; }
         .btn:hover { opacity: 0.9; }
@@ -47,7 +48,7 @@
         .btn-add { background: var(--secondary); color: #fff; }
         .btn-voltar { background: #6c757d; color: white; margin-bottom: 15px; }
         .btn-del { background: var(--danger); color: white; padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; }
-        .btn-editar { background: #3a86ef; color: white; padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-editar { background: #3a86ef; color: white; padding: 6px 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
         
         .tabs-fixas { position: fixed; bottom: 0; width: 100%; display: flex; background: var(--secondary); border-top: 3px solid var(--primary); z-index: 100; }
         .tab-btn { flex: 1; padding: 15px; color: white; border: none; background: none; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
@@ -58,10 +59,10 @@
         .field-group label { font-weight: bold; font-size: 14px; flex: 1; }
         .field-group input { width: 120px; text-align: right; }
         
-        .badge-cmv { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; }
+        .badge-cmv { padding: 3px 6px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; }
         .cmv-bom { background: #d4edda; color: #155724; }
         .cmv-alto { background: #f8d7da; color: #721c24; }
-        .badge-status { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
+        .badge-status { padding: 2px 5px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
         .status-pronto { background: #2b8a3e; color: #fff; }
         .status-vazio { background: #ced4da; color: #495057; }
     </style>
@@ -102,7 +103,7 @@ const listaPadrao = {
     "uva": { preco: 10.00, emb: 1000 }, "goiabada": { preco: 12.00, emb: 1000 }
 };
 
-const DB_KEY = 'mondiale_v27';
+const DB_KEY = 'mondiale_v28';
 const CUSTO_FIXO_EMBALAGEM = 3.20;
 
 let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
@@ -126,7 +127,7 @@ function navegar(pag) {
     else renderBackup();
 }
 
-// --- LISTA DE PIZZAS ---
+// --- LISTA DE PIZZAS (COM GANHO BRUTO) ---
 function renderListaPizzas() {
     let totalCadastradas = 0;
     saboresFull.forEach(s => {
@@ -158,8 +159,9 @@ function renderListaPizzas() {
                 <thead>
                     <tr>
                         <th>Sabor</th>
-                        <th style="text-align:right">Custo (CMV)</th>
+                        <th style="text-align:right">Custo</th>
                         <th style="text-align:right">CMV %</th>
+                        <th style="text-align:right">Ganho (R$)</th>
                         <th style="text-align:center">Ação</th>
                     </tr>
                 </thead>
@@ -170,6 +172,8 @@ function renderListaPizzas() {
         let custo = calcularCustoTotalPizza(sabor);
         let precoVenda = db.precosVenda[sabor] || 0;
         let cmvPct = precoVenda > 0 ? ((custo / precoVenda) * 100).toFixed(1) : 0;
+        let ganhoBruto = precoVenda > 0 ? (precoVenda - custo) : 0;
+        
         let badgeClass = cmvPct > 0 && cmvPct <= 35 ? 'cmv-bom' : (cmvPct > 35 ? 'cmv-alto' : '');
         let classeLinha = temIngredientes ? 'pizza-com-ingrediente' : 'pizza-sem-ingrediente';
 
@@ -184,6 +188,9 @@ function renderListaPizzas() {
                 <td style="text-align:right" class="col-custo">R$ ${custo.toFixed(2)}</td>
                 <td style="text-align:right">
                     ${cmvPct > 0 ? `<span class="badge-cmv ${badgeClass}">${cmvPct}%</span>` : '<span style="color:#aaa">-</span>'}
+                </td>
+                <td style="text-align:right" class="col-ganho">
+                    ${precoVenda > 0 ? `R$ ${ganhoBruto.toFixed(2)}` : '<span style="color:#aaa">-</span>'}
                 </td>
                 <td style="text-align:center">
                     <button class="btn-editar" onclick="abrirEdicao('${sabor}')">Editar</button>
@@ -226,13 +233,17 @@ function renderFichaEdicao() {
                     <span class="resumo-val">${nome==='MASSA BASE' ? db.rendimentoMassa + ' un' : 'R$ ' + custoMassa.toFixed(2)}</span>
                 </div>
                 <div class="resumo-item">
-                    CUSTO TOTAL (CMV R$)
-                    <span class="resumo-val" id="total-f" style="color:#48c774">R$ 0,00</span>
+                    CUSTO (CMV)
+                    <span class="resumo-val" id="total-f" style="color:#ff4d4d">R$ 0,00</span>
                 </div>
                 ${nome !== 'MASSA BASE' ? `
                 <div class="resumo-item">
                     CMV (%)
                     <span class="resumo-val" id="cmv-pct" style="color:#ffd166">0%</span>
+                </div>
+                <div class="resumo-item">
+                    GANHO BRUTO
+                    <span class="resumo-val" id="ganho-bruto" style="color:#48c774">R$ 0,00</span>
                 </div>` : ''}
             </div>
 
@@ -327,10 +338,17 @@ function recalcularF() {
     if (db.atual !== "MASSA BASE") {
         let precoVenda = db.precosVenda[db.atual] || 0;
         let cmvPct = precoVenda > 0 ? ((custoFinal / precoVenda) * 100).toFixed(1) : "0.0";
+        let ganho = precoVenda > 0 ? (precoVenda - custoFinal) : 0;
+
         let elemCmv = document.getElementById('cmv-pct');
         if (elemCmv) {
             elemCmv.textContent = cmvPct + "%";
             elemCmv.style.color = parseFloat(cmvPct) > 35 ? "#ff4d4d" : "#48c774";
+        }
+
+        let elemGanho = document.getElementById('ganho-bruto');
+        if (elemGanho) {
+            elemGanho.textContent = "R$ " + ganho.toFixed(2);
         }
     }
 }
@@ -342,7 +360,7 @@ function salvarEFechar() {
     voltarParaLista();
 }
 
-// --- ESTOQUE (SALVAMENTO EM TEMPO REAL) ---
+// --- ESTOQUE ---
 function renderEstoque() {
     let html = `
         <div class="card">
